@@ -1,0 +1,793 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Tests Auxiliar Cantabria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: cuaderno de estudio en una columna (máx. 820px), cabecera con hojas, tres pestañas; tarjetas solo para preguntas y paneles de datos. */
+:root{
+  --bg:#f6ece0; --surface:#fffaf3; --sunk:#efe2d2; --ink:#2b1d14; --muted:#6e5848; --line:#e1cfba;
+  --rust:#b5471b; --rust-ink:#ffffff; --amber:#d98a1b; --ochre:#c9952a; --moss:#5d8a2e; --plum:#8e2a5c;
+  --ok:#5d8a2e; --ok-bg:#e6efd6; --bad:#8e2a5c; --bad-bg:#f5dfe9; --blank:#c9952a; --blank-bg:#f6ead0;
+  --grid:#e8d9c6;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Verdana", "Segoe UI", system-ui, sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1d1612; --surface:#28201a; --sunk:#221b16; --ink:#f3e7d8; --muted:#bba693; --line:#43352b;
+  --rust:#e2703f; --rust-ink:#1d1612; --amber:#f0a33a; --ochre:#b5822a; --moss:#7a9f3c; --plum:#c45f91;
+  --ok:#8fb256; --ok-bg:#26301b; --bad:#e08ab3; --bad-bg:#3a1f2c; --blank:#d9a640; --blank-bg:#352a17;
+  --grid:#3a2e25; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#1d1612; --surface:#28201a; --sunk:#221b16; --ink:#f3e7d8; --muted:#bba693; --line:#43352b;
+  --rust:#e2703f; --rust-ink:#1d1612; --amber:#f0a33a; --ochre:#b5822a; --moss:#7a9f3c; --plum:#c45f91;
+  --ok:#8fb256; --ok-bg:#26301b; --bad:#e08ab3; --bad-bg:#3a1f2c; --blank:#d9a640; --blank-bg:#352a17;
+  --grid:#3a2e25; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55}
+.wrap{max-width:820px;margin:0 auto;padding-inline:16px;padding-block:0 72px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+
+/* Cabecera */
+header.hero{position:relative;overflow:hidden;padding-block:28px 22px;border-bottom:1px solid var(--line)}
+.hero .eyebrow{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.hero h1{font-size:clamp(2rem,6vw,2.9rem);font-weight:800;margin-top:6px;max-width:15ch}
+.hero h1 em{font-style:normal;color:var(--rust)}
+.hero p{margin:8px 0 0;color:var(--muted);max-width:52ch}
+.leaves{position:absolute;right:-14px;top:-6px;width:210px;height:170px;pointer-events:none}
+@media (max-width:560px){.leaves{width:130px;height:110px;opacity:.55}}
+.strip{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:18px}
+.strip div{display:flex;align-items:baseline;gap:8px}
+.strip b{font-family:var(--f-display);font-size:1.5rem}
+.strip span{color:var(--muted);font-size:.9rem}
+
+/* Pestañas */
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:4px;padding-block:10px;border-bottom:1px solid var(--line);overflow-x:auto}
+nav.tabs button{border:0;background:transparent;padding:9px 14px;border-radius:999px;font-weight:700;cursor:pointer;color:var(--muted);white-space:nowrap}
+nav.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.badge{display:inline-block;min-width:1.5em;padding:0 .4em;margin-left:6px;border-radius:999px;background:var(--plum);color:#fff;font-size:.75rem;text-align:center}
+section.panel{padding-block:22px}
+
+/* Elegir sesión */
+.sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.source{position:relative;display:flex;flex-direction:column;gap:6px;padding:16px 16px 18px;border:2px solid var(--line);border-radius:var(--r);background:var(--surface);cursor:pointer;min-width:0}
+.source input{position:absolute;opacity:0;pointer-events:none}
+.source .sw{width:30px;height:6px;border-radius:3px}
+.source strong{font-family:var(--f-display);font-size:1.15rem}
+.source small{color:var(--muted);font-size:.9rem;line-height:1.4}
+.source:has(input:checked){border-color:var(--rust);box-shadow:0 0 0 3px color-mix(in srgb,var(--rust) 18%,transparent)}
+.source:has(input:disabled){opacity:.55;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:end;margin-top:18px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1 1 260px}
+.field label{font-weight:700;font-size:.95rem}
+select{padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);width:100%}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:10px 16px;cursor:pointer;font-weight:700;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--sunk);color:var(--ink)}
+.btn{border:0;border-radius:10px;padding:12px 20px;font-weight:700;cursor:pointer;background:var(--rust);color:var(--rust-ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:8px 12px;font-size:.9rem}
+.note{color:var(--muted);font-size:.9rem;margin:12px 0 0;max-width:62ch}
+.status{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--sunk);font-size:.95rem}
+.status[data-kind="err"]{background:var(--bad-bg);color:var(--bad)}
+
+/* Test */
+.quizbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);z-index:4;background:var(--bg);padding-block:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.meter{flex:1 1 200px;height:10px;border-radius:5px;background:var(--sunk);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--amber);transition:width .25s}
+.qlist{display:flex;flex-direction:column;gap:14px;margin-top:6px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;min-width:0}
+.q .meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:.82rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:999px;background:var(--sunk);font-weight:700}
+.chip i{width:8px;height:8px;border-radius:50%}
+.q h3{font-family:var(--f-body);font-size:1.03rem;font-weight:700;margin:10px 0 12px;line-height:1.45}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin-top:8px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--bg)}
+.opt input{margin-top:5px;accent-color:var(--rust)}
+.opt .l{font-weight:700;color:var(--muted)}
+.opt .t{flex:1;min-width:0}
+.opt .tag{font-size:.8rem;font-weight:700;white-space:nowrap}
+.opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ink)}
+.opt.correct .tag,.opt.correct .l{color:var(--ok)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.opt.wrong .t{text-decoration:line-through;text-decoration-thickness:1px}
+.opt.wrong .tag,.opt.wrong .l{color:var(--bad)}
+.q.is-ok{border-left:6px solid var(--ok)} .q.is-bad{border-left:6px solid var(--bad)} .q.is-blank{border-left:6px solid var(--blank)}
+.verdict{margin-top:12px;font-weight:700}
+.verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)} .verdict.blank{color:var(--muted)}
+.expl{margin-top:6px;color:var(--muted);font-size:.95rem}
+.explain{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.explain .out{white-space:pre-wrap;padding:12px;border-radius:10px;background:var(--sunk);font-size:.95rem}
+.explain .out:empty{display:none}
+
+/* Resultado */
+.result{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-top:6px}
+.result .top{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center}
+.bignote{font-family:var(--f-display);font-weight:800;font-size:3.4rem;line-height:1}
+.bignote small{font-size:1.1rem;color:var(--muted);font-weight:600}
+.stack{display:flex;height:22px;border-radius:6px;overflow:hidden;gap:2px;margin-top:14px;background:var(--surface)}
+.stack span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:.9rem;color:var(--muted)}
+.legend b{color:var(--ink)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* Progreso */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.tile b{display:block;font-family:var(--f-display);font-size:1.9rem;font-weight:800}
+.tile span{color:var(--muted);font-size:.88rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-top:16px;min-width:0}
+.card h2{font-size:1.25rem}
+.card .sub{color:var(--muted);font-size:.9rem;margin:4px 0 10px}
+.chart{width:100%;overflow:visible}
+.chart text{fill:var(--muted);font-family:var(--f-body);font-size:12px}
+.chart .gl{stroke:var(--grid);stroke-width:1}
+.chart .ln{fill:none;stroke:var(--rust);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.chart .ar{fill:var(--rust);opacity:.13}
+.chart .dt{fill:var(--rust);stroke:var(--surface);stroke-width:2}
+.chart .pass{stroke:var(--moss);stroke-width:1.5;stroke-dasharray:5 4}
+.chart .bar{fill:var(--bad)}
+.chart .bartrack{fill:var(--sunk)}
+.chart .lbl{fill:var(--ink)}
+.chart .hit{fill:transparent;cursor:default}
+.tablebox{overflow-x:auto;margin-top:8px}
+table{border-collapse:collapse;width:100%;font-size:.92rem;min-width:520px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.empty{padding:26px 18px;text-align:center;color:var(--muted);border:2px dashed var(--line);border-radius:var(--r);margin-top:16px}
+.empty strong{display:block;color:var(--ink);font-family:var(--f-display);font-size:1.2rem;margin-bottom:4px}
+
+/* Fallos */
+.fgroup{margin-top:18px}
+.fgroup h3{font-size:1.05rem;display:flex;gap:8px;align-items:center}
+.fitem{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.fitem .body{flex:1;min-width:0}
+.fitem .body p{margin:0;font-weight:700;font-size:.97rem}
+.fitem .body small{color:var(--muted);display:block;margin-top:4px}
+.fitem .body small b{color:var(--ok)}
+.times{flex:none;font-family:var(--f-display);font-weight:800;color:var(--bad);min-width:2.6em;text-align:center;font-size:1.1rem}
+.times small{display:block;font-family:var(--f-body);font-weight:400;font-size:.7rem;color:var(--muted)}
+
+#tip{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--bg);padding:6px 10px;border-radius:8px;font-size:.85rem;max-width:240px;opacity:0;transition:opacity .1s}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <svg class="leaves" viewBox="0 0 210 170" aria-hidden="true">
+      <g transform="translate(150 52) rotate(28)"><path d="M0-40C22-30 26-6 0 34-26-6-22-30 0-40Z" fill="var(--rust)"/><path d="M0-36V34" stroke="var(--bg)" stroke-width="2"/></g>
+      <g transform="translate(92 34) rotate(-36)"><path d="M0-28C16-21 18-4 0 24-18-4-16-21 0-28Z" fill="var(--amber)"/><path d="M0-25V24" stroke="var(--bg)" stroke-width="1.6"/></g>
+      <g transform="translate(184 118) rotate(70)"><path d="M0-26C15-19 17-4 0 22-17-4-15-19 0-26Z" fill="var(--plum)"/><path d="M0-23V22" stroke="var(--bg)" stroke-width="1.5"/></g>
+      <g transform="translate(118 112) rotate(-12)"><path d="M0-20C11-15 13-3 0 17-13-3-11-15 0-20Z" fill="var(--moss)"/><path d="M0-18V17" stroke="var(--bg)" stroke-width="1.3"/></g>
+    </svg>
+    <div class="eyebrow">Gobierno de Cantabria · Cuerpo General Auxiliar (C2)</div>
+    <h1>Tests <em>Auxiliar</em> Cantabria</h1>
+    <p>Examen oficial de 2025 con la plantilla del tribunal, preguntas nuevas de Claude sobre los 25 temas del BOC e historial de tus fallos.</p>
+    <div class="strip" aria-live="polite">
+      <div><b class="num" id="sSes">0</b><span>sesiones</span></div>
+      <div><b class="num" id="sMedia">–</b><span>nota media</span></div>
+      <div><b class="num" id="sFallos">0</b><span>fallos por repasar</span></div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Secciones">
+    <button role="tab" id="tab-practicar" aria-controls="p-practicar" aria-selected="true">Practicar</button>
+    <button role="tab" id="tab-progreso" aria-controls="p-progreso" aria-selected="false">Mi progreso</button>
+    <button role="tab" id="tab-fallos" aria-controls="p-fallos" aria-selected="false">Mis fallos<span class="badge num" id="bFallos" hidden>0</span></button>
+  </nav>
+
+  <!-- PRACTICAR -->
+  <section class="panel" id="p-practicar" role="tabpanel" aria-labelledby="tab-practicar">
+    <div id="setup">
+      <h2 style="font-size:1.35rem">¿Qué practicas hoy?</h2>
+      <div class="sources" style="margin-top:14px" role="radiogroup" aria-label="Tipo de sesión">
+        <label class="source"><input type="radio" name="src" id="srcOf" value="oficial" checked><span class="sw" style="background:var(--rust)"></span><strong>Examen oficial 2025</strong><small>124 preguntas reales del ejercicio único (OPE 2023+2024), corregidas con la plantilla del tribunal.</small></label>
+        <label class="source"><input type="radio" name="src" id="srcIa" value="ia"><span class="sw" style="background:var(--amber)"></span><strong>Preguntas nuevas con Claude</strong><small id="iaDesc">Claude escribe un test nuevo del tema que elijas, citando el artículo de la ley.</small></label>
+        <label class="source"><input type="radio" name="src" id="srcFa" value="fallos"><span class="sw" style="background:var(--plum)"></span><strong>Repasar mis fallos</strong><small id="faDesc">Las preguntas que has fallado. Al acertarlas, salen de la lista.</small></label>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="tema">Tema del programa (BOC)</label>
+          <select id="tema"></select>
+        </div>
+        <div class="field" style="flex:0 0 auto">
+          <label id="nLbl">Preguntas</label>
+          <div class="seg" role="group" aria-labelledby="nLbl">
+            <button type="button" id="n10" aria-pressed="false">10</button>
+            <button type="button" id="n25" aria-pressed="true">25</button>
+          </div>
+        </div>
+        <button class="btn" id="btnStart" type="button">Empezar test</button>
+      </div>
+      <p class="note" id="setupNote"></p>
+      <div class="status" id="genStatus" hidden></div>
+    </div>
+
+    <div id="quiz" hidden>
+      <div class="quizbar">
+        <strong id="quizTitle" style="font-family:var(--f-display)"></strong>
+        <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+        <span class="num" id="answered" style="color:var(--muted);font-size:.9rem"></span>
+      </div>
+      <div id="result" hidden></div>
+      <div class="qlist" id="qlist"></div>
+      <div class="row" id="quizActions">
+        <button class="btn" id="btnCheck" type="button">Corregir</button>
+        <button class="btn ghost" id="btnQuit" type="button">Salir sin corregir</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESO -->
+  <section class="panel" id="p-progreso" role="tabpanel" aria-labelledby="tab-progreso" hidden>
+    <div class="tiles">
+      <div class="tile"><b class="num" id="tSes">0</b><span>sesiones hechas</span></div>
+      <div class="tile"><b class="num" id="tMedia">–</b><span>nota media sobre 10</span></div>
+      <div class="tile"><b class="num" id="tUlt">–</b><span>última nota</span></div>
+      <div class="tile"><b class="num" id="tResp">0</b><span>preguntas respondidas</span></div>
+    </div>
+    <div id="progEmpty" class="empty"><strong>Aún no hay sesiones</strong>Haz tu primer test en «Practicar». Aquí verás tu nota sesión a sesión y los temas donde más fallas.</div>
+    <div id="progCharts" hidden>
+      <div class="card">
+        <h2>Tu nota, sesión a sesión</h2>
+        <p class="sub">Nota sobre 10 con la penalización del examen. La línea verde marca el 5.</p>
+        <div id="chNota"></div>
+      </div>
+      <div class="card">
+        <h2>Dónde fallas más</h2>
+        <p class="sub">Porcentaje de errores sobre las preguntas respondidas de cada tema, en todas tus sesiones.</p>
+        <div id="chTemas"></div>
+      </div>
+      <div class="card">
+        <h2>Historial de sesiones</h2>
+        <div class="tablebox"><table><thead><tr><th>Fecha</th><th>Test</th><th class="n">Aciertos</th><th class="n">Errores</th><th class="n">En blanco</th><th class="n">Nota</th></tr></thead><tbody id="histBody"></tbody></table></div>
+      </div>
+    </div>
+    <p class="note" id="storeNote"></p>
+  </section>
+
+  <!-- FALLOS -->
+  <section class="panel" id="p-fallos" role="tabpanel" aria-labelledby="tab-fallos" hidden>
+    <div class="row" style="margin-top:0;justify-content:space-between;align-items:center">
+      <h2 style="font-size:1.35rem">Preguntas que has fallado</h2>
+      <button class="btn" id="btnRepasar" type="button">Repasar mis fallos</button>
+    </div>
+    <p class="note">Ordenadas por tema y por las veces que las has fallado. Al acertarlas en un repaso salen de la lista.</p>
+    <div id="fallosEmpty" class="empty"><strong>No tienes fallos pendientes</strong>Cuando falles una pregunta en un test, aparecerá aquí para que la repases.</div>
+    <div id="fallosList"></div>
+  </section>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script>
+// Examen oficial Cuerpo General Auxiliar, Gobierno de Cantabria, OPE 2023+2024, ejercicio único (plantilla 10/02/2025).
+// [número, tema, enunciado, [a,b,c,d], índice correcto]. Excluidas: 66 (anulada) y 97 (requiere imagen).
+const OFICIAL_2025 = [
+[1,"ae","En el ámbito de la Administración de la Comunidad Autónoma de Cantabria, para identificarse y firmar electrónicamente, las personas físicas podrán emplear:",["Las modalidades de uso cl@ve permanente y cl@ve firma, del sistema de claves concertadas Cl@ve, de la Administración General del Estado, pero no la modalidad cl@ve ocasional (cl@ve PIN).","Exclusivamente los sistemas de identificación y firma electrónica avanzada basados en certificado electrónico cualificado, expedidos por prestadores cualificados.","Exclusivamente los sistemas de identificación y firma electrónica avanzada basados en certificado de firma electrónica cualificada, expedidos por prestadores cualificados.","El sistema de claves concertadas Cl@ve, de la Administración General del Estado, en sus tres modalidades de uso: cl@ve ocasional (cl@ve PIN), cl@ve permanente y cl@ve firma."],3],
+[2,"ae","En relación con la sede electrónica de la Administración de la Comunidad Autónoma de Cantabria, la gestión de contenidos y servicios comunes a varias consejerías corresponde:",["A las consejerías afectadas, de común acuerdo.","A la dirección general competente en materia de administración electrónica.","A la dirección general competente en materia de atención a los ciudadanos.","A la Inspección General de Servicios."],2],
+[3,"ac","En materia de registro de documentos, señale la opción correcta en relación con la aportación de documentación complementaria y su acreditación:",["El funcionario habilitado que realice el registro se responsabilizará de la veracidad de los documentos presentados.","Las copias que aporten las personas interesadas al procedimiento administrativo tendrán eficacia tanto en el ámbito público como en el privado.","La aportación de documentación complementaria sólo será posible cuando se realice el registro de forma presencial.","Si la presentación se ha realizado de manera automatizada, en el recibo justificativo de registro se ofrecerá una relación de documentos adjuntos a la solicitud presentada."],3],
+[4,"ac","En materia de registro de documentos, no serán objeto de la previa digitalización y posterior proceso de registro presencial:",["En cualquier caso, las solicitudes presentadas en modelos normalizados.","Las ofertas en los procedimientos de contratación.","En cualquier caso, los documentos que se reciban por fax, telegrama y burofax, así como los documentos anónimos.","Los documentos suscritos por varios interesados."],1],
+[5,"ac","Señale la opción correcta acerca de la tramitación de una queja o sugerencia sobre el funcionamiento de la Administración de la Comunidad Autónoma de Cantabria:",["Si la persona interesada no ha recibido respuesta en un plazo de diez días, no mediando requerimiento de aclaraciones, podrá interponer recurso contencioso-administrativo.","Las quejas y sugerencias se formularán necesariamente por medios electrónicos, utilizando un modelo normalizado.","En el plazo de veinte días hábiles, el órgano directivo correspondiente notificará a la persona interesada las actuaciones realizadas y las medidas adoptadas.","En el plazo de quince días hábiles, el órgano directivo correspondiente notificará a la persona interesada las actuaciones realizadas y las medidas adoptadas."],2],
+[6,"ac","De acuerdo con el Decreto 42/2019, de 28 de marzo, el conocimiento, seguimiento, supervisión y centralización de toda la información administrativa que, generada en una consejería, resulte relevante para la ciudadanía, corresponde:",["A las oficinas de asistencia en materia de registro auxiliares.","A la oficina de asistencia en materia de registro electrónico general.","A la secretaría general de cada consejería.","A la persona coordinadora designada por la Inspección General de Servicios."],2],
+[7,"ac","En materia de atención ciudadana, de acuerdo con el Decreto 42/2019, de 28 de marzo, la información administrativa particular será proporcionada:",["Por la Oficina de Atención Ciudadana.","Por los órganos y unidades administrativas de gestión de los ámbitos competenciales específicos dentro de la Administración de la Comunidad Autónoma de Cantabria.","Por las Oficinas de asistencia en materia de registro, tanto del registro electrónico general, como de los registros auxiliares y delegados.","Por las personas coordinadoras de atención ciudadana."],1],
+[8,"ss","Señale la opción correcta acerca de las prestaciones económicas del Régimen General de la Seguridad Social derivadas de accidente de trabajo o enfermedad profesional, cuando la lesión se produzca por incumplimiento empresarial de las medidas de seguridad y salud en el trabajo:",["Se aumentarán de un 10 a un 50 por ciento, según la gravedad de la lesión.","Se aumentarán de un 30 a un 50 por ciento, según la gravedad de la lesión.","Se aumentarán de un 10 a un 50 por ciento, según la gravedad de la falta.","Se aumentarán de un 30 a un 50 por ciento, según la gravedad de la falta."],3],
+[9,"ss","De acuerdo con la Ley General de la Seguridad Social, de los siguientes supuestos, no tendrán la consideración de accidente de trabajo:",["Los que sufra el trabajador al volver del lugar de trabajo.","Los debidos a imprudencia temeraria del trabajador accidentado.","Los que sufra el trabajador con ocasión del desempeño de cargos electivos de carácter sindical.","Las enfermedades o defectos, padecidos con anterioridad por el trabajador, que se agraven como consecuencia de la lesión constitutiva del accidente."],1],
+[10,"prl","En materia de prevención de riesgos laborales, la vigilancia periódica del estado de salud de los trabajadores en función de los riesgos inherentes al trabajo:",["Será siempre obligatoria para el empresario y para los trabajadores a su servicio.","Sólo podrá llevarse a cabo si el trabajador presta su consentimiento, salvo en los supuestos previstos en la Ley de Prevención de Riesgos Laborales.","Será voluntaria para empresarios y trabajadores, salvo en supuestos de riesgos excepcionales.","Deberá contar con autorización previa de la autoridad administrativa en materia sanitaria."],1],
+[11,"prl","De acuerdo con el artículo 14 de la Ley de Prevención de Riesgos Laborales, señale la opción correcta acerca del coste de las medidas relativas a la seguridad y salud en el trabajo:",["No deberá recaer en modo alguno sobre los trabajadores.","Podrá recaer sobre los trabajadores cuando el riesgo se vea incrementado en función de su estado de salud previo.","Será asumido por el empresario, salvo cuando resulte desproporcionado.","Será asumido por las Administraciones competentes en materia de trabajo y seguridad social."],0],
+[12,"arc","De acuerdo con lo dispuesto en la Ley 3/2002, de 28 de junio, de Archivos de Cantabria, los documentos se tratan, ordenan, clasifican y transfieren en:",["Archivos temporales.","Archivos documentales.","Series documentales.","Series temporales."],2],
+[13,"arc","De acuerdo con lo dispuesto en la Ley 3/2002, de 28 de junio, de Archivos de Cantabria, forman parte del Patrimonio Documental de Cantabria los documentos radicados en Cantabria, conservados por personas físicas y cuya antigüedad sea superior a:",["Cuarenta años.","Cincuenta años.","Ochenta años.","Cien años."],3],
+[14,"dis","De acuerdo con lo establecido en la Ley General de derechos de las personas con discapacidad y de su inclusión social, el principio en virtud del cual las personas con discapacidad deben poder llevar una vida en igualdad de condiciones, accediendo a los mismos lugares, ámbitos, bienes y servicios que están a disposición de cualquier otra persona, se denomina:",["Normalización.","Accesibilidad universal.","Inclusión social.","Transversalidad."],0],
+[15,"l39","No están obligados a relacionarse a través de medios electrónicos con las Administraciones Públicas:",["Las personas jurídicas.","Las entidades sin personalidad jurídica.","Los notarios y registradores de la propiedad y mercantiles.","Las personas físicas."],3],
+[16,"l40","De acuerdo con la Ley 40/2015, de 1 de octubre, de Régimen Jurídico del Sector Público, ¿qué documentos utilizados en las actuaciones administrativas deberán almacenarse en archivos electrónicos?",["Sólo los aportados por los particulares.","Sólo los elaborados por la Administración.","Todos los documentos, salvo cuando no sea posible.","Sólo los finalizadores de los procedimientos."],2],
+[17,"fp","Según establece la Ley del Estatuto Básico del Empleado Público, ¿en cuál de los siguientes supuestos no podrá ser aceptada la renuncia a la condición de funcionario de carrera?",["En caso de que el funcionario sea nombrado diputado o senador de las Cortes Generales o de las Asambleas legislativas de las Comunidades Autónomas.","Cuando el funcionario sea nombrado para formar parte de algún órgano constitucional.","Cuando adquiera la condición de funcionario de carrera de un cuerpo o escala distinto al de origen.","Cuando el funcionario esté sujeto a expediente disciplinario."],3],
+[18,"l40","En relación con la suplencia, la Ley 40/2015, de 1 de octubre, de Régimen Jurídico del Sector Público, dispone que:",["En las resoluciones y actos que se dicten mediante suplencia no es necesario hacer constar esta circunstancia.","La suplencia no implicará alteración de la competencia, y para su validez será necesaria su publicación.","Los titulares de los órganos administrativos no podrán ser suplidos temporalmente en los casos en que haya sido declarada su abstención o recusación.","Si no se designa suplente, la competencia del órgano administrativo se ejercerá por quien designe el órgano administrativo inmediato superior de quien dependa."],3],
+[19,"fp","Según la Ley 53/1984, de 26 de diciembre, de Incompatibilidades del personal al servicio de las Administraciones Públicas, ¿cuál de las siguientes situaciones requeriría una resolución que reconociera la compatibilidad para su ejercicio?",["La participación ocasional en un programa de un medio de comunicación social.","La colaboración en un curso de carácter profesional.","La participación en Tribunales calificadores de pruebas selectivas para ingreso en las Administraciones Públicas.","El ejercicio como profesor asociado universitario a tiempo parcial y con duración determinada."],3],
+[20,"ig","La Ley Orgánica 3/2007, de 22 de marzo, para la igualdad efectiva de mujeres y hombres, dispone que cualquier comportamiento realizado en función del sexo de una persona con el propósito o el efecto de atentar contra su dignidad y de crear un entorno intimidatorio, degradante u ofensivo, constituye:",["Discriminación directa.","Discriminación indirecta.","Acoso sexual.","Acoso por razón de sexo."],3],
+[21,"l40","De acuerdo con lo dispuesto en la Ley 40/2015, de 1 de octubre, de Régimen Jurídico del Sector Público, los interesados en un procedimiento podrán promover la recusación de las autoridades y el personal al servicio de las Administraciones Públicas:",["En cualquier momento de la tramitación del procedimiento.","Exclusivamente en el trámite de audiencia.","En cualquier momento de la tramitación del procedimiento, siempre que sea previo al trámite de audiencia.","Exclusivamente al interponer el recurso contra la resolución que ponga fin al procedimiento."],0],
+[22,"fp","Según establece la Ley del Estatuto Básico del Empleado Público, para poder participar en los procesos de promoción interna los funcionarios deberán poseer, entre otros requisitos, una antigüedad en el subgrupo inferior, o grupo de clasificación profesional en el supuesto de que este no tenga subgrupo, de al menos:",["Depende del subgrupo o grupo al que se pretenda acceder.","Tres años continuados.","Dos años de servicio activo.","Cinco años de servicio activo."],2],
+[23,"fp","En materia de incompatibilidades del personal al servicio de las Administraciones Públicas, todas las resoluciones de compatibilidad para desempeñar un segundo puesto o actividad en el sector público o para el ejercicio de actividades privadas, se inscribirán:",["En el Registro Central de Personal.","En la Oficina de Conflicto de Intereses.","En la Unidad de Personal del Ministerio u Organismo correspondiente.","En los Registros de Personal correspondientes."],3],
+[24,"ig","Según establece la Ley Orgánica 3/2007, de 22 de marzo, para la igualdad efectiva de mujeres y hombres, los actos y las cláusulas de los negocios jurídicos que constituyan o causen discriminación por razón de sexo se consideran:",["Anulables.","Nulos y sin efecto.","Nulos o anulables, en función de la gravedad de la discriminación ocasionada.","Anulables o irregulares, pero no invalidantes, en función de la gravedad de la discriminación ocasionada."],1],
+[25,"fp","De acuerdo con lo establecido en la Ley del Estatuto Básico del Empleado Público, cuando de la instrucción de un procedimiento disciplinario resulte la existencia de indicios fundados de criminalidad, se suspenderá su tramitación poniéndolo en conocimiento de:",["Los jueces y tribunales.","El Defensor del Pueblo.","El Ministerio Fiscal.","La Policía Nacional."],2],
+[26,"l39","Señale la opción correcta en relación con la solicitud de informes durante la tramitación del procedimiento administrativo:",["El informe emitido fuera de plazo no podrá ser tenido en cuenta en ningún caso al adoptar la resolución que ponga fin al procedimiento.","Los informes serán emitidos por medios electrónicos en el plazo de quince días, salvo que una disposición o el cumplimiento del resto de los plazos del procedimiento permita o exija otro plazo mayor o menor.","Salvo disposición expresa en contrario, los informes serán preceptivos y no vinculantes.","Salvo disposición expresa en contrario, los informes serán facultativos y no vinculantes."],3],
+[27,"l39","Según establece la Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas, la realización de actuaciones administrativas fuera del tiempo establecido para ellas:",["Implicará en todo caso la nulidad del acto.","Implicará siempre la anulabilidad del acto.","En ningún caso implicará la anulabilidad del acto.","Sólo implicará la anulabilidad del acto cuando así lo imponga la naturaleza del término o plazo."],3],
+[28,"fp","Las funcionarias víctimas de violencia de género, para hacer efectiva su protección o su derecho a la asistencia social integral, tendrán derecho a solicitar la excedencia prevista en el artículo 89.5 de la Ley del Estatuto Básico del Empleado Público:",["Sin tener que haber prestado un tiempo mínimo de servicios previos y sin que sea exigible un plazo de permanencia en la misma.","Sin tener que haber prestado un tiempo mínimo de servicios previos y debiendo permanecer un mínimo de un año en dicha situación.","Cuando hayan prestado un tiempo mínimo de dos años de servicios previos y sin que sea exigible un plazo de permanencia en la misma.","Cuando hayan prestado un tiempo mínimo de un año de servicios previos y sin que sea exigible un plazo de permanencia en la misma."],0],
+[29,"ce","Según el artículo 117 de la Constitución Española de 1978, la base de la organización y funcionamiento de los Tribunales es:",["El principio de dependencia jerárquica de jueces y magistrados.","El principio de unidad jurisdiccional.","El principio de movilidad de jueces y magistrados.","El principio de privacidad de las sentencias."],1],
+[30,"pd","En lo que respecta a los datos sobre las personas físicas fallecidas a que se refiere el artículo 3 de la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales, señale la opción correcta:",["Los herederos sólo podrán ejercitar el derecho de cancelación.","Los familiares no podrán acceder a los datos personales cuando lo prohíba una norma reglamentaria.","Los herederos podrán acceder a los datos de carácter patrimonial del causante en todo caso.","Sólo podrán acceder a los datos personales los familiares hasta el segundo grado de consanguinidad o afinidad."],2],
+[31,"ue","Según el Tratado de la Unión Europea, ¿qué institución dará a la Unión los impulsos necesarios para su desarrollo y definirá sus orientaciones y prioridades políticas generales?",["La Comisión Europea.","El Parlamento Europeo.","El Consejo Europeo.","El Consejo de Europa."],2],
+[32,"l39","De acuerdo con la Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas, señale la opción correcta acerca del plazo máximo en que debe notificarse la resolución expresa de un procedimiento:",["Será de dos meses en todo caso.","Será de tres meses en todo caso.","No podrá exceder en ningún caso de seis meses.","Cuando las normas reguladoras de los procedimientos no fijen el plazo máximo, este será de tres meses."],3],
+[33,"fp","De acuerdo con la Ley del Estatuto Básico del Empleado Público, cuando un funcionario acceda a la situación de excedencia por cuidado de hijo, el puesto de trabajo desempeñado se reservará:",["Durante el primer año.","Al menos, durante dos años.","Durante todo el periodo de excedencia.","Al menos, durante tres años."],1],
+[34,"fp","La edad de jubilación forzosa del personal funcionario incluido en el Régimen General de la Seguridad Social será, en todo caso:",["65 años.","67 años.","La que prevean las normas reguladoras de dicho régimen para el acceso a la pensión de jubilación en su modalidad contributiva sin coeficiente reductor por razón de la edad.","La que prevean las normas reguladoras de dicho régimen para el acceso a la pensión de jubilación en su modalidad contributiva, e incluirá un coeficiente reductor por razón de la edad."],2],
+[35,"fp","Cuando la situación de incapacidad temporal impida iniciar el disfrute de las vacaciones dentro del año natural al que correspondan, se podrán disfrutar:",["Siempre que no hayan transcurrido más de dieciocho meses a partir de la finalización de la situación de incapacidad temporal.","Siempre que no hayan transcurrido más de dieciocho meses a partir del inicio de la situación de incapacidad temporal.","Siempre que no hayan transcurrido más de dieciocho meses a partir del final del año en que se hayan originado.","Siempre que no hayan transcurrido más de dieciocho meses a partir del final del año siguiente al que correspondan."],2],
+[36,"l39","En materia de recursos administrativos, en el caso de que proceda la audiencia de los interesados, el plazo para formular alegaciones y presentar documentos y justificantes tendrá una duración:",["De quince días.","De diez días.","No superior a quince días ni inferior a diez.","De veinte días."],2],
+[37,"l39","¿Qué recurso cabe interponer en vía administrativa contra las disposiciones administrativas de carácter general?",["Potestativo de reposición.","De alzada.","Extraordinario de revisión.","Ninguno."],3],
+[38,"l39","Cuando el procedimiento de revisión de disposiciones y actos nulos se hubiera iniciado de oficio, se producirá la caducidad del mismo:",["Transcurridos seis meses desde su inicio sin dictarse resolución.","Transcurridos tres meses desde su inicio sin dictarse resolución.","Transcurridos doce meses desde su inicio sin dictarse resolución.","Transcurridos dos meses desde su inicio sin dictarse resolución."],0],
+[39,"l39","Señale la opción incorrecta acerca del desistimiento de su solicitud por los interesados en el procedimiento administrativo:",["En cualquier caso, la Administración aceptará de plano el desistimiento, y declarará concluso el procedimiento.","Si el escrito se hubiera formulado por dos o más interesados, el desistimiento sólo afectará a aquellos que lo hubiesen formulado.","Si la cuestión suscitada por la incoación del procedimiento suscitase interés general, la Administración podrá limitar los efectos del desistimiento al interesado, y seguirá el procedimiento.","Todo interesado podrá desistir de su solicitud."],0],
+[40,"l39","Señale la opción incorrecta acerca de las medidas provisionales en el procedimiento administrativo:",["No podrán ser alzadas o modificadas durante la tramitación del procedimiento.","No se podrán adoptar medidas provisionales que puedan causar perjuicio de difícil o imposible reparación a los interesados.","Podrán consistir en la retención de ingresos a cuenta que deban abonar las Administraciones Públicas.","Iniciado el procedimiento, podrán adoptarse de oficio o a instancia de parte."],0],
+[41,"l39","Señale la opción correcta acerca de los actos administrativos que tengan un contenido imposible:",["Son irrecurribles.","Son nulos de pleno derecho.","Son anulables.","Serán objeto de convalidación."],1],
+[42,"l39","Cuando el acto administrativo tenga por destinatario a una pluralidad indeterminada de personas, será objeto:",["De notificación individual a cada una de ellas.","De notificación a la persona que aparezca en primer lugar.","De suspensión de sus efectos hasta que sus destinatarios sean determinados.","De publicación."],3],
+[43,"l39","En materia de cómputo de plazos, si el plazo se fija en años, este concluirá:",["El mismo día en que se produjo la notificación, publicación o silencio administrativo en el año de vencimiento.","El día siguiente a aquel en que se produjo la notificación, publicación o silencio administrativo en el año de vencimiento.","El último día del año de vencimiento.","El último día hábil del año de vencimiento."],0],
+[44,"l39","Se responsabilizarán de la veracidad de los documentos aportados por los interesados al procedimiento administrativo:",["Los funcionarios habilitados para la identificación o firma por medios electrónicos.","Los prestadores de servicios de certificación.","Los funcionarios que presten servicios en las oficinas de registro.","Los propios interesados."],3],
+[45,"l39","Señale la opción correcta acerca del plazo máximo en el que debe notificarse la resolución expresa del procedimiento:",["Será el fijado por la norma reguladora del correspondiente procedimiento, no pudiendo exceder de tres meses.","Será el fijado por la norma reguladora del correspondiente procedimiento, no pudiendo exceder en ningún caso de seis meses.","Cuando la norma reguladora del correspondiente procedimiento no fije el plazo máximo, este será de seis meses.","Cuando la norma reguladora del correspondiente procedimiento no fije el plazo máximo, este será de tres meses."],3],
+[46,"l39","Señale la opción correcta acerca del medio elegido por la persona física para comunicarse con las Administraciones Públicas:",["Tendrá una validez de cinco años, transcurridos los cuales deberá ser ratificado.","Una vez notificada la elección del medio por la persona física, se mantendrá vigente durante dos años.","Tendrá una validez inicial de un año, y sólo podrá modificarse transcurrido ese periodo inicial.","Podrá ser modificado por aquella en cualquier momento."],3],
+[47,"l40","Señale la opción correcta acerca de la delegación de competencias:",["Las competencias que se ejerzan por delegación sólo podrán delegarse mediante autorización expresa de una norma reglamentaria.","La delegación de la competencia será revocable en cualquier momento por el órgano que la haya conferido.","La delegación de la competencia sólo será revocable una vez transcurrido el periodo por el que fue otorgada.","La delegación de la competencia no precisa de su publicación en el Boletín Oficial de Cantabria."],1],
+[48,"l518","En la Administración de la Comunidad Autónoma de Cantabria, la retribución de los directores generales será:",["La establecida en las relaciones de puestos de trabajo.","La que se establezca en la Ley de Presupuestos Generales de la Comunidad Autónoma de Cantabria para cada ejercicio.","La que se establezca en la Ley de Presupuestos Generales del Estado para cada ejercicio.","La que se establezca mediante acuerdo del Gobierno."],1],
+[49,"l518","En la Administración de la Comunidad Autónoma de Cantabria, los subdirectores generales serán nombrados:",["Por el director general del que dependan.","Por el secretario general de la consejería de la que dependan.","Por el Gobierno.","Por el consejero del que dependa."],3],
+[50,"l518","En la Administración de la Comunidad Autónoma de Cantabria, la atribución de informar los anteproyectos de ley de otras consejerías corresponde:",["Al secretario general.","Al director general competente por razón de la materia.","Al consejero.","A las subdirecciones generales."],0],
+[51,"l518","En la Administración General de la Comunidad, la función de coordinación y apoyo en la dirección y gestión de los servicios de una dirección general corresponde:",["Al director general.","Al subdirector general.","A los jefes de los servicios adscritos a la dirección general.","A las jefaturas de las unidades administrativas que componen la dirección general."],1],
+[52,"l40","La función de preparar el despacho de los asuntos, redactar y autorizar las actas de las sesiones de un órgano colegiado corresponde:",["Al presidente.","Al secretario.","A la mayoría simple de los vocales, mediante acuerdo adoptado al efecto.","Al vocal que se designe a estos efectos."],1],
+[53,"l40","Los acuerdos de los órganos colegiados serán adoptados:",["Por mayoría absoluta.","Por mayoría de votos.","Por mayoría de dos tercios.","Por mayoría de tres quintos."],1],
+[54,"l518","Son organismos públicos vinculados o dependientes de la Administración General de la Comunidad Autónoma de Cantabria:",["Los organismos autónomos y las sociedades mercantiles autonómicas.","Los organismos autónomos y los consorcios.","Las entidades públicas empresariales y los organismos autónomos.","Las entidades públicas empresariales y las sociedades mercantiles autonómicas."],2],
+[55,"est","La Comunidad Autónoma de Cantabria tiene competencia exclusiva en materia de:",["Salvamento marítimo.","Protección del medio ambiente y de los ecosistemas.","Régimen local, vigilancia y protección de sus edificios e instalaciones y coordinación de las policías locales.","Vivienda."],3],
+[56,"est","En el Parlamento de Cantabria, el número mínimo de Diputados para la formación de Grupos Parlamentarios se establecerá:",["Por ley del propio Parlamento.","Por el Reglamento del Parlamento.","Por decreto del Gobierno.","Mediante ley orgánica."],1],
+[57,"est","De acuerdo con lo dispuesto en el artículo 8 del Estatuto de Autonomía para Cantabria, señale la opción correcta acerca del Parlamento de Cantabria:",["Representa a los ciudadanos y es inamovible.","Representa al pueblo cántabro y es inviolable.","Representa al pueblo cántabro y es inamovible.","Representa a los electores y es inviolable."],1],
+[58,"fp","¿En qué situación administrativa quedaría un funcionario de carrera de la Administración General de la Comunidad Autónoma de Cantabria que obtenga un cargo electivo retribuido y con dedicación exclusiva en una Diputación Provincial, según lo dispuesto en la Ley del Estatuto Básico del Empleado Público?",["Excedencia por prestación de servicios en el sector público.","Servicio en otras Administraciones Públicas.","Excedencia voluntaria.","Servicios especiales."],3],
+[59,"fp","Según la Ley del Estatuto Básico del Empleado Público, las retribuciones complementarias de los funcionarios:",["Se fijan en la Ley de Presupuestos Generales del Estado para el conjunto de las Administraciones Públicas.","Se fijan en la Ley de Presupuestos Generales del Estado para la Administración General del Estado y las entidades locales, y en las respectivas leyes de presupuestos de las comunidades autónomas para las administraciones autonómicas.","Serán establecidas en su importe y progresividad por la correspondiente ley de desarrollo del Estatuto Básico del Empleado Público de cada Administración Pública.","Serán establecidas en su cuantía y estructura por las correspondientes leyes de cada Administración Pública."],3],
+[60,"ue","Indique cuál de los siguientes actos jurídicos de la Unión Europea no es vinculante:",["Dictamen.","Directiva.","Reglamento.","Decisión."],0],
+[61,"ue","Los miembros de la Comisión Europea serán elegidos:",["Por sufragio, en elecciones periódicas cada cuatro años.","En razón de su competencia general y de su compromiso europeo, de entre personalidades que ofrezcan plenas garantías de independencia.","Por sufragio, en elecciones periódicas cada cinco años.","En razón de su formación general y compromiso europeo, de entre personalidades que ostenten cargos de responsabilidad directiva en sus respectivos países."],1],
+[62,"tr","En materia de acceso a la información pública, las solicitudes incompletas o imprecisas que no se concreten en el plazo otorgado:",["Se desestimarán.","Serán archivadas por desistimiento.","Serán inadmitidas.","Se declararán caducadas."],1],
+[63,"tr","En virtud del principio de libre acceso a la información pública, pueden solicitar el acceso a ésta:",["Las personas que acrediten un interés legítimo.","Quienes hubieran comparecido en el trámite de información pública.","Las personas físicas.","Cualquier persona."],3],
+[64,"tr","Entre las causas de inadmisión a trámite de las solicitudes de acceso a la información pública, no se encuentra:",["Que la información esté en curso de publicación general.","Que se refieran a información que tenga carácter auxiliar o de apoyo.","Que no se haya motivado la solicitud.","Que sean manifiestamente repetitivas."],2],
+[65,"tr","Las resoluciones dictadas en materia de acceso a la información pública son recurribles:",["Ante la Jurisdicción Contencioso-Administrativa, previa interposición de la reclamación preceptiva ante el Consejo de Transparencia y Buen Gobierno, u órgano equivalente de las comunidades autónomas.","Directamente ante la Jurisdicción Contencioso-Administrativa, sin perjuicio de la posibilidad de interponer la reclamación potestativa ante el Consejo de Transparencia y Buen Gobierno, u órgano equivalente de las comunidades autónomas.","Ante la Jurisdicción Contencioso-Administrativa, previa interposición del recurso administrativo procedente.","Directamente ante la Jurisdicción Contencioso-Administrativa, sin perjuicio de la posibilidad de interponer el recurso potestativo de reposición."],1],
+[67,"l518","La Administración General de la Comunidad Autónoma de Cantabria, constituida por órganos jerárquicamente ordenados, actúa, para el cumplimiento de sus fines:",["Sin personalidad jurídica.","Con personalidad jurídica privada.","Con personalidad jurídica única.","Con personalidad jurídica mixta pública y privada."],2],
+[68,"l518","Según la Ley de Cantabria 5/2018, de 22 de noviembre, de Régimen Jurídico del Gobierno, de la Administración y del Sector Público Institucional de la Comunidad Autónoma de Cantabria, proponer al Gobierno de la Nación la adopción de cuantas medidas afecten a los intereses de la Comunidad Autónoma de Cantabria es una atribución:",["Del Presidente de la Comunidad Autónoma de Cantabria.","Únicamente del Parlamento de Cantabria.","Del Gobierno de la Comunidad Autónoma de Cantabria, salvo que tal propuesta corresponda al Parlamento.","Exclusivamente del Gobierno de la Comunidad Autónoma de Cantabria."],2],
+[69,"ue","La norma de Derecho Comunitario que tiene un alcance general, obligatorio en todos sus elementos y directamente aplicable en cada Estado miembro se denomina:",["Dictamen.","Recomendación.","Directiva.","Reglamento."],3],
+[70,"ae","Entre las condiciones de admisión del sello electrónico como sistema de identificación y firma electrónica de las personas jurídicas ante la Administración de la Comunidad Autónoma de Cantabria, no se encuentra:",["El uso del sello electrónico implica que la actuación se atribuirá directamente a la persona jurídica, sin que deba acreditarse la representación.","El uso del sello electrónico implica que la actuación se atribuirá directamente al representante firmante, previa acreditación de la representación.","El sello electrónico no se podrá sujetar a límites, dentro del conjunto de trámites para los que sea admitido.","El uso del sello electrónico será alternativo al uso del sistema de firma de la persona física representante, pudiendo emplearse ambos sistemas, de forma indistinta, a elección del interesado."],1],
+[71,"ss","En materia de Seguridad Social, los trabajadores con discapacidad empleados en los centros especiales de empleo quedarán incluidos:",["En el Régimen General.","En el Régimen Especial de los Trabajadores Autónomos.","Como trabajadores por cuenta ajena en el régimen de la Seguridad Social que corresponda a su actividad.","En el régimen especial previsto en la Ley General de la Seguridad Social para estos trabajadores."],2],
+[72,"l39","Señale la respuesta incorrecta en relación con la presentación de documentación en un Registro:",["Las Administraciones deberán hacer pública y mantener actualizada una relación de las oficinas en las que la documentación a registrar únicamente podrá presentarse de forma presencial.","Las Administraciones podrán establecer la obligación de presentar determinados documentos por medios electrónicos para ciertos procedimientos y colectivos de personas físicas que, por su capacidad económica, técnica, dedicación profesional u otros motivos, quede acreditado que tienen acceso y disponibilidad de los medios electrónicos necesarios.","Los documentos presentados de manera presencial ante las Administraciones deberán ser digitalizados, según la normativa aplicable.","Se podrá llevar a cabo la presentación de una solicitud en el registro electrónico todos los días del año durante las veinticuatro horas."],0],
+[73,"ig","De acuerdo con lo dispuesto en la Ley Orgánica 3/2007, de 22 de marzo, para la igualdad efectiva de mujeres y hombres, la situación en que se encuentra una persona que sea, haya sido o pudiera ser tratada, en atención a su sexo, de manera menos favorable que otra en situación comparable, se considera:",["Acoso sexual.","Acoso por razón de sexo.","Discriminación directa por razón de sexo.","Discriminación indirecta por razón de sexo."],2],
+[74,"pd","De conformidad con el artículo 4 de la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales, señale en cuál de los siguientes supuestos será imputable la inexactitud de los datos al responsable del tratamiento:",["Cuando hayan sido obtenidos de un registro público.","Cuando hayan sido obtenidos a través de un tercero.","Cuando se hayan recibido de otro responsable habiendo ejercido el derecho a la portabilidad.","Cuando hayan sido obtenidos directamente del afectado."],1],
+[75,"fp","Señale la opción correcta acerca de la posibilidad de que los nacionales de los Estados miembros de la Unión Europea puedan acceder al empleo público en las Administraciones Públicas españolas:",["Solamente podrán acceder como personal laboral.","Solamente podrán acceder como personal funcionario.","Como personal laboral podrán acceder en igualdad de condiciones que los españoles.","Podrán acceder en igualdad de condiciones que los españoles, como personal funcionario y como personal laboral."],2],
+[76,"l39","De las siguientes notificaciones, en ningún caso se efectuarán por medios electrónicos:",["Todas las susceptibles de conversión en formato papel.","Las que contengan resoluciones sancionadoras que, en virtud de la normativa sectorial aplicable, deban ser objeto de publicidad en diarios oficiales.","Las que contengan cheques a favor de los obligados.","Las que contengan datos personales especialmente protegidos."],2],
+[77,"l39","De los siguientes enunciados, señale el que constituye una regla de funcionamiento del registro electrónico:",["Los documentos se considerarán presentados por el orden de hora efectiva en que lo fueron en día inhábil.","Para establecer el orden de presentación, computarán en primer lugar los días hábiles del mes, y dentro de estos, por horas y minutos.","Los documentos presentados en día hábil se reputarán anteriores a los que lo fueron en el día inhábil anterior a aquel.","Permitirá la presentación de documentos todos los días del año, excepto los festivos de carácter nacional no sustituibles."],0],
+[78,"l518","En la Administración de la Comunidad Autónoma de Cantabria, la estructura orgánica de cada consejería será aprobada:",["Por el consejero titular de la misma, mediante orden.","Por el consejero competente en materia de hacienda, a propuesta del consejero respectivo.","Por el Consejo de Gobierno, mediante decreto.","Por el consejero competente en materia de presidencia, mediante orden."],2],
+[79,"l518","En la Administración de la Comunidad Autónoma de Cantabria, el ejercicio de la jefatura superior del personal de la Consejería corresponde:",["Al Consejero.","A los directores generales.","Al Secretario General.","A la Dirección General de Función Pública."],2],
+[80,"ac","De acuerdo con el Decreto 42/2019, de 28 de marzo, señale la opción correcta acerca de la solicitud de información administrativa ante la Oficina de Atención Ciudadana:",["La información será facilitada de inmediato, a ser posible, o en el plazo máximo de quince días si resultase necesario realizar la consulta a otro órgano o unidad de la Administración de la Comunidad Autónoma de Cantabria.","La información será facilitada de inmediato, a ser posible, o en el plazo máximo de diez días si resultase necesario realizar la consulta a otro órgano o unidad de la Administración de la Comunidad Autónoma de Cantabria.","La información será facilitada de inmediato, a ser posible, o en el plazo máximo de dos días si resultase necesario realizar la consulta a otro órgano o unidad de la Administración de la Comunidad Autónoma de Cantabria.","Si la información solicitada no correspondiera a la Administración de la Comunidad Autónoma de Cantabria, se realizarán las gestiones necesarias ante el órgano competente para obtener la información y facilitársela al solicitante en el plazo máximo de cinco días."],0],
+[81,"ss","Señale la opción correcta acerca de la distribución del tipo de cotización por solidaridad entre empresario y trabajador, según dispone el artículo 19 bis de la Ley General de la Seguridad Social:",["El tipo de cotización por solidaridad será idéntico para empresario y trabajador.","El tipo de cotización por solidaridad será asumido íntegramente por el empresario.","El tipo de cotización por solidaridad se asumirá en el 15% por el trabajador y el 85% por el empresario.","La distribución del tipo de cotización por solidaridad entre empresario y trabajador mantendrá la misma proporción que la distribución del tipo de cotización por contingencias comunes."],3],
+[82,"ce","Según el artículo 102 de la Constitución Española de 1978, si el Presidente del Gobierno fuere acusado de un delito contra la seguridad del Estado en el ejercicio de sus funciones, la acusación sólo podrá ser planteada por iniciativa de:",["La quinta parte de los miembros del Congreso, y con la aprobación de la mayoría simple del mismo.","La cuarta parte de los miembros del Congreso, y con la aprobación de la mayoría simple del mismo.","La cuarta parte de los miembros del Congreso, y con la aprobación de la mayoría absoluta del mismo.","La quinta parte de los miembros del Congreso, y con la aprobación de la mayoría absoluta del mismo."],2],
+[83,"ae","Señale la opción correcta en relación con la representación habilitada para presentar documentos ante la Administración de la Comunidad Autónoma de Cantabria:",["Para la presentación de documentos en representación de terceros será suficiente una declaración responsable del representante.","La habilitación para la presentación de documentos en representación de terceros confiere a la persona habilitada la facultad de recibir las comunicaciones electrónicas de la Administración de la Comunidad Autónoma de Cantabria en nombre del interesado, siempre que sean consecuencia del documento presentado.","La falta o insuficiencia de la representación de las personas en cuyo nombre se hubiera presentado la documentación dará lugar a la exigencia de las responsabilidades que fueran procedentes.","La falta o insuficiencia de la representación de las personas en cuyo nombre se hubiera presentado la documentación dará lugar, sin más trámite, al archivo de las actuaciones realizadas."],2],
+[84,"fp","En relación con las retribuciones de los funcionarios, ¿en cuál de los siguientes supuestos se devengarán por días las retribuciones básicas y complementarias de carácter fijo y periodicidad mensual?",["En el mes de iniciación de licencias con derecho a retribución.","En el mes de toma de posesión del primer destino en un Cuerpo o Escala.","En el mes de finalización de licencias con derecho a retribución.","En el mes en que se produzca un cambio de puesto de trabajo, aunque no conlleve la adscripción a una Administración Pública distinta a aquella en la que presta servicios."],1],
+[85,"win","El escritorio de Windows 10 se puede definir como:",["El punto de acceso de los programas.","La ventana secundaria que permite al usuario ejecutar un comando.","El organizador de las funciones de un programa.","El área de trabajo en pantalla, análoga a un escritorio físico."],3],
+[86,"win","La barra de tareas de Windows 10 es:",["El punto de acceso de los programas que se muestran en el escritorio.","Una lista jerárquica de comandos.","Una ventana que informa al usuario de un problema crítico o de una condición especial en un control.","Una lista simple para permitir seleccionar entre un conjunto de valores excluyentes entre sí."],0],
+[87,"win","En Windows 10, el método abreviado de teclado «Tecla del logotipo de Windows + D», ¿qué efecto produce?",["Abrir el Explorador de archivos.","Mostrar y ocultar el escritorio.","Minimizar todas las ventanas.","Restaurar las ventanas minimizadas en el escritorio."],1],
+[88,"win","Si en Windows 10 queremos comprobar qué ventanas tenemos abiertas, ¿cuál de las siguientes opciones utilizaremos?",["Ctrl+Tab.","Windows+Tab.","Ctrl+Mayús.","Windows+Mayús."],1],
+[89,"win","¿Cuál de los siguientes atajos de teclado permite cambiar entre aplicaciones abiertas?",["Ctrl+W.","Tecla del logo de Windows+Ctrl+S.","Alt+Tab.","F5."],2],
+[90,"win","¿Qué combinación de teclas permite bloquear el equipo en Windows 10?",["Tecla de logotipo de Windows+Mayús+L.","Tecla de logotipo de Windows+L.","Tecla de logotipo de Windows+Control+B.","Tecla de logotipo de Windows+B."],1],
+[91,"win","¿Dónde se muestran las carpetas usadas con frecuencia y los archivos usados recientemente?",["En el Escritorio.","En la Barra de herramientas.","En el Panel de Control.","En el acceso rápido del Explorador de Archivos."],3],
+[92,"win","En el Explorador de archivos de Windows 10, ¿cuál de los siguientes no es una opción elegible en la selección de los detalles que se pueden mostrar para los elementos de la carpeta?",["Tamaño.","Fecha de modificación.","Nombre.","Celdas."],3],
+[93,"win","De las opciones que se relacionan a continuación, ¿qué opción es un tipo de recorte?",["Forma libre.","Rectangular.","Ventana.","Todas las respuestas anteriores son correctas."],3],
+[94,"win","Si queremos mover un fichero de una a otra carpeta, ¿qué utilizaremos?",["Copiar y pegar.","Cortar y pegar.","Copiar y cortar.","Cortar y copiar."],1],
+[95,"win","¿Cuál de las siguientes secuencias permite crear una nueva carpeta en el Explorador de archivos en Windows 10?",["Botón derecho del ratón > Nuevo > Nueva Carpeta.","Pestaña Inicio > Organizar > Nueva Carpeta.","Botón derecho del ratón > Nuevo > Carpeta.","Pestaña Inicio > Abrir > Nueva Carpeta."],2],
+[96,"word","En Word 2016, el control de cambios se encuentra dentro de la pestaña:",["Diseño.","Revisar.","Referencias.","Insertar."],1],
+[98,"word","No es una pestaña predeterminada de la cinta de opciones de Word 2016:",["Referencias.","Fórmulas.","Diseño.","Revisar."],1],
+[99,"word","Si se quiere comparar diferentes versiones de un documento en Word 2016, la secuencia a seguir sería:",["Pestaña Diseño, opción Comparar.","Pestaña Revisar, opción Comparar.","Pestaña Inicio, opción Comparar.","Pestaña Vista, opción Comparar."],1],
+[100,"word","¿Cuál de los siguientes no es un tipo de estilo seleccionable al crear un nuevo estilo a partir del formato en Word 2016?",["Párrafo.","Viñeta.","Lista.","Carácter."],1],
+[101,"word","En Word 2016, de forma predeterminada, indique cuáles son las vistas disponibles en el grupo Vistas de la pestaña Vista:",["Modo lectura; Diseño de impresión; Esquema; Borrador; Zoom.","Modo lectura; Diseño de impresión; Diseño web; Varias páginas; Esquema; Borrador.","Modo lectura; Diseño de impresión; Diseño web; Esquema; Borrador.","Modo lectura; Diseño de impresión; Diseño web; Tabla de contenido; Esquema; Borrador."],2],
+[102,"word","A través de la combinación de correspondencia de Word 2016, el usuario podrá:",["Crear lotes de documentos personalizados para cada destinatario de la combinación.","Enviar mensajes de correo electrónico masivo.","Crear etiquetas.","Todas las respuestas anteriores son correctas."],3],
+[103,"word","En combinación de correspondencia de Word 2016, seleccionamos una lista de destinatarios que ya tenemos creada y, una vez abierta, ¿podemos hacer modificaciones de la misma?",["Una vez iniciado el proceso de combinación ya no se puede modificar.","Sólo se puede modificar desde la lista de direcciones de origen.","Sí, desde la opción de editar destinatarios en edición.","Ninguna de las respuestas anteriores es correcta."],2],
+[104,"word","En Word 2016, ¿se puede insertar una tabla dentro de una celda de otra tabla?",["Sí, si dividimos la celda.","Dentro de una celda de una tabla de Word no se puede crear otra tabla.","Sí, a través de insertar tabla dentro de la celda.","Ninguna de las respuestas anteriores es correcta."],2],
+[105,"word","Cuando convierto una tabla en texto puedo utilizar los siguientes separadores:",["Marcas de párrafo.","Tabulaciones.","Puntos y comas.","Todas las respuestas anteriores son correctas."],3],
+[106,"word","En relación al control de cambios en Word 2016, señale la afirmación correcta:",["El control de cambios se encuentra en la pestaña Vista de la cinta de opciones.","Se pueden rechazar todos los cambios de un documento a la vez.","Los comentarios solo pueden eliminarse de uno en uno.","No es posible bloquear el seguimiento de cambios en un documento."],1],
+[107,"word","En Word 2016, ¿qué efecto tiene sobre un documento abierto establecer la opción «Marcar como final» en «Proteger documento»?",["Controlar los tipos de cambios que los otros usuarios pueden hacer.","Garantizar la integridad del documento al agregar una firma digital invisible.","Informar a los lectores de que el documento es definitivo y hacer que sea de solo lectura.","Requerir una contraseña para abrir el documento."],2],
+[108,"excel","De entre las siguientes fórmulas de Excel 2016, indique cuál utilizaría para calcular el número total de días laborables entre dos fechas:",["DIAS.LAB","DIA.LAB","CONTAR.DIAS.LAB","FECHA.MES"],0],
+[109,"excel","Estando situados en cualquier celda de una hoja de Excel 2016, ¿cuál es la combinación de teclas que hay que pulsar para ir directamente a la celda A1 de la misma hoja?",["Ctrl+Inicio.","Ctrl+Intro.","Ctrl+Esc.","Ctrl+F1."],0],
+[110,"excel","En una hoja de Excel 2016, en la columna A tenemos el nombre de varias ciudades y en la columna B la Comunidad Autónoma a la que pertenecen. Si queremos que en la columna C se concatenen las columnas A y B con un espacio en blanco entre ellas, ¿cuál de las siguientes fórmulas utilizaremos?",["En Excel, al ser hojas de cálculo, no permite concatenar texto.","Combinando las celdas horizontalmente.","=A1&\" \"&B1","=A1$\" \"$B1"],2],
+[111,"excel","En Excel 2016, ¿qué tipo de referencia es A$1?",["Relativa.","Absoluta.","Abreviada.","Mixta."],3],
+[112,"excel","Tras introducir en una celda de Excel 2016 la expresión (12/3)*19-15 y pulsar «Enter», ¿qué resultado daría?",["Error.","61.","(12/3)*19-15.","16."],2],
+[113,"excel","Si estamos trabajando en una hoja de Excel 2016 y queremos inmovilizar las dos primeras columnas, ¿cómo lo haríamos?",["Seleccionamos la primera y la segunda columna y, manteniendo la citada selección, pinchamos en la pestaña «Vista» > «Inmovilizar» > «Inmovilizar paneles».","Seleccionamos la tercera columna y, manteniendo la citada selección, pinchamos en la pestaña «Vista» > «Inmovilizar» > «Inmovilizar columnas».","Seleccionamos la segunda columna y, manteniendo la citada selección, pinchamos en la pestaña «Vista» > «Inmovilizar» > «Inmovilizar primera columna».","Seleccionamos la tercera columna y, manteniendo la citada selección, pinchamos en la pestaña «Vista» > «Inmovilizar» > «Inmovilizar paneles»."],3],
+[114,"out","Si queremos crear una carpeta de búsqueda en Outlook 2016, ¿cuál de las siguientes opciones no es un tipo de carpeta de búsqueda predefinida?",["Correo de personas y listas.","La fecha de conversación.","Lectura de correo.","Organización de correo."],1],
+[115,"out","Si deseamos remitir un correo electrónico a varios destinatarios, existe la posibilidad de remitir el mensaje sin que el nombre o dirección de correo electrónico sea visible para el resto de los destinatarios:",["En Outlook no existe esta posibilidad y habría que enviar un correo por cada destinatario.","Introduciendo el nombre o la dirección en el campo CC.","Introduciendo el nombre o la dirección en el campo CCO.","Introduciendo el nombre o la dirección en el campo Para."],2],
+[116,"out","¿Qué son las Reglas de correo electrónico en Outlook 2016?",["Normas para redactar mensajes.","Directrices para el uso de adjuntos en mensajes.","Las que permiten mover, marcar y responder a mensajes de correo electrónico automáticamente.","Opciones que Outlook ofrece para organizar el modo de visualización de bandejas y carpetas."],2],
+[117,"out","En Outlook 2016, sobre el envío, respuesta y reenvío, ¿cuál de las siguientes afirmaciones es falsa?",["Al responder a un mensaje se agrega el prefijo RE: a la línea del asunto.","Al responder a un mensaje, los datos adjuntos al mensaje original se incluyen en la respuesta.","Al reenviar un mensaje, se agrega el prefijo RV: a la línea del asunto.","Varios mensajes de correo electrónico se pueden reenviar como una colección en un solo mensaje."],1],
+[118,"out","Estando en la Bandeja de Entrada de Outlook 2016, ¿en qué pestaña de la cinta de opciones se encuentra el comando «Orden inverso»?",["Carpeta.","Enviar y recibir.","Vista.","Inicio."],2],
+[119,"net","¿Cuál es el navegador que sustituyó en Windows 10 a Internet Explorer?",["Microsoft Edge.","iOS.","Chrome.","Firefox."],0],
+[120,"net","¿Qué representan las siglas HTTPS?",["Protocolo seguro de transferencia de hipertexto.","Protocolo seguro de transmisión de hipertexto.","Protocolo seguro de transposición de hipertexto.","Ninguna respuesta de las anteriores es correcta."],0],
+[121,"net","Una dirección IP está compuesta por:",["4 grupos de números separados por puntos.","4 grupos alfanuméricos separados por guiones.","3 grupos de números separados por puntos.","3 grupos alfanuméricos separados por guiones."],0],
+[122,"net","¿Cuál es la combinación de teclas para hacer búsquedas en las páginas web tanto en el navegador Google Chrome como en el navegador Microsoft Edge?",["Ctrl+B en Google Chrome y Ctrl+F en Microsoft Edge.","Ctrl+B en Microsoft Edge y Ctrl+F en Google Chrome.","Ctrl+F tanto en Google Chrome como en Microsoft Edge.","Ctrl+B tanto en Google Chrome como en Microsoft Edge."],2],
+[123,"net","En el navegador Microsoft Edge, ¿cómo se accede a los certificados personales instalados?",["Herramientas > Opciones de Internet > Contenido > Certificados.","Configuración y más > Privacidad y Seguridad > Seguridad > Configuración avanzada > Gestionar los certificados del dispositivo.","Herramientas > Configuración > Certificados > Certificados instalados.","Configuración y más > Configuración > Privacidad, búsqueda y servicios > Seguridad > Administrar certificados."],3],
+[124,"net","¿Cuál es la función de los marcadores en Chrome?",["Guardar páginas web para acceder a ellas más tarde.","Guardar los contactos de redes sociales de una forma agrupada.","Una forma de localizar las cookies almacenadas durante la navegación.","Chrome no tiene la posibilidad de uso de marcadores."],0],
+[125,"excel","¿Qué diferencia existe entre copiar y mover una fórmula en Excel 2016?",["Ninguna. Con ambas operaciones conseguiremos el mismo resultado.","Al copiar una fórmula conseguiremos que los cálculos que se realizaban con referencias a un conjunto de celdas ahora se realicen para otro conjunto. Pero al mover una fórmula, los cálculos darán como resultado #ERROR.","Al copiar una fórmula conseguiremos que los cálculos que se realizaban con referencias a un conjunto de celdas ahora se realicen para otro conjunto. Pero al mover una fórmula, los cálculos se realizarán con las mismas referencias a las celdas originales.","Al mover una fórmula no se mantienen las referencias mixtas y relativas, mientras que al copiarla permanecen constantes."],2],
+[126,"word","En Word 2016 se ha insertado una imagen en un documento. Al intentar crear una «Referencia cruzada» a dicha imagen de tipo ilustración, esta no aparece como elemento al que deseamos hacer referencia. Señale la respuesta correcta:",["Las referencias cruzadas no pueden hacerse sobre imágenes insertadas en un documento.","La imagen hay que insertarla en el documento después de crear la referencia cruzada.","Previamente, hay que asignar un título a la imagen.","Con el puntero del ratón sobre la imagen, hacer clic de botón derecho y seleccionar la opción «Vínculo»."],2]
+];
+
+
+const TEMAS = [
+  {id:"ue",   n:"1",     t:"La Unión Europea", ley:"Tratado de la Unión Europea y TFUE: instituciones y fuentes del Derecho de la UE"},
+  {id:"ce",   n:"2",     t:"La Constitución Española de 1978", ley:"Constitución Española de 1978"},
+  {id:"est",  n:"3",     t:"El Estatuto de Autonomía para Cantabria", ley:"Estatuto de Autonomía para Cantabria (Ley Orgánica 8/1981)"},
+  {id:"l518", n:"4",     t:"Gobierno y Administración de Cantabria", ley:"Ley de Cantabria 5/2018, de Régimen Jurídico del Gobierno, de la Administración y del Sector Público Institucional"},
+  {id:"l39",  n:"5",     t:"Procedimiento administrativo común", ley:"Ley 39/2015, del Procedimiento Administrativo Común de las Administraciones Públicas"},
+  {id:"l40",  n:"6",     t:"Régimen jurídico del sector público", ley:"Ley 40/2015, de Régimen Jurídico del Sector Público"},
+  {id:"fp",   n:"7–8",   t:"Función pública: personal, derechos y deberes", ley:"Texto refundido del Estatuto Básico del Empleado Público, Ley de Cantabria 4/1993 de Función Pública y Ley 53/1984 de Incompatibilidades"},
+  {id:"ss",   n:"9",     t:"Ley General de la Seguridad Social", ley:"Texto refundido de la Ley General de la Seguridad Social (RDLeg 8/2015)"},
+  {id:"tr",   n:"10",    t:"Transparencia y acceso a la información", ley:"Ley de Cantabria 1/2018 de Transparencia y Ley 19/2013"},
+  {id:"prl",  n:"11",    t:"Prevención de riesgos laborales", ley:"Ley 31/1995, de Prevención de Riesgos Laborales"},
+  {id:"ig",   n:"12",    t:"Igualdad y violencia de género", ley:"Ley Orgánica 3/2007 para la igualdad efectiva de mujeres y hombres y Ley Orgánica 1/2004"},
+  {id:"dis",  n:"13",    t:"Derechos de las personas con discapacidad", ley:"RDLeg 1/2013, Ley General de derechos de las personas con discapacidad y de su inclusión social"},
+  {id:"ac",   n:"14, 16",t:"Atención a la ciudadanía, quejas y registro", ley:"Normativa de Cantabria de atención a la ciudadanía, quejas y sugerencias y registro (Decreto 42/2019)"},
+  {id:"pd",   n:"15",    t:"Protección de datos personales", ley:"Ley Orgánica 3/2018, de Protección de Datos Personales y garantía de los derechos digitales, y RGPD"},
+  {id:"arc",  n:"17",    t:"Archivos de Cantabria", ley:"Ley de Cantabria 3/2002, de Archivos de Cantabria"},
+  {id:"ae",   n:"18",    t:"Administración electrónica en Cantabria", ley:"Decreto 60/2018 de Cantabria sobre administración electrónica (sede, identificación y firma)"},
+  {id:"win",  n:"19–20", t:"Windows 11 y Explorador de archivos", ley:"Microsoft Windows 11: escritorio, barra de tareas, atajos y Explorador de archivos"},
+  {id:"word", n:"21",    t:"Microsoft Word (Microsoft 365)", ley:"Microsoft Word de Microsoft 365, versión de escritorio en español"},
+  {id:"excel",n:"22",    t:"Microsoft Excel (Microsoft 365)", ley:"Microsoft Excel de Microsoft 365, versión de escritorio en español"},
+  {id:"out",  n:"23",    t:"Microsoft Outlook (Microsoft 365)", ley:"Microsoft Outlook de Microsoft 365, versión de escritorio en español"},
+  {id:"teams",n:"24",    t:"Microsoft Teams", ley:"Microsoft Teams: chats, equipos, canales, reuniones y archivos"},
+  {id:"net",  n:"25",    t:"Internet y seguridad informática", ley:"Navegadores, protocolos de Internet y seguridad informática básica"}
+];
+const TEMA = Object.fromEntries(TEMAS.map(t=>[t.id,t]));
+const INFORMATICA = new Set(["win","word","excel","out","teams","net"]);
+const PEN_GENERAL = 0.25, PEN_INFO = 0.5; // fallo resta 1/4 (parte general) o 1/2 (informática) de un acierto
+
+const OFICIAL = OFICIAL_2025.map(([n,t,q,o,c])=>({key:"of25-"+n, src:"oficial", num:n, t, q, o, c}));
+
+/* ---------- estado ---------- */
+let db=null, uid=null, sample=null, perfil=null;
+let sesiones=[];          // {id, fecha, fuente, tema, total, ok, bad, blank, nota, porTema}
+let fallos=new Map();     // key -> doc
+let memMode=false;        // historial solo en memoria
+let nPreg=25;
+let current=null;         // sesión en curso
+let genCtl=null;
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=n=>(Math.round(n*100)/100).toFixed(2).replace(".",",");
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function hash(s){let h=5381;for(const ch of s)h=((h<<5)+h+ch.codePointAt(0))>>>0;return h.toString(36)}
+
+/* ---------- pestañas ---------- */
+const tabs=["practicar","progreso","fallos"];
+function showTab(name){
+  for(const t of tabs){
+    $("#tab-"+t).setAttribute("aria-selected",String(t===name));
+    $("#p-"+t).hidden = t!==name;
+  }
+  try{localStorage.setItem("tab",name)}catch(e){}
+  if(name==="progreso") renderProgreso();
+}
+tabs.forEach(t=>$("#tab-"+t).addEventListener("click",()=>showTab(t)));
+
+/* ---------- preparación ---------- */
+function countOficial(id){return OFICIAL.filter(q=>q.t===id).length}
+function fillTemas(){
+  const src=document.querySelector('input[name="src"]:checked').value;
+  const sel=$("#tema"); const prev=sel.value;
+  let html="";
+  if(src!=="ia") html+=`<option value="todos">Todos los temas</option>`;
+  for(const t of TEMAS){
+    let extra="";
+    if(src==="oficial"){const c=countOficial(t.id); if(!c) continue; extra=` · ${c} preg.`}
+    if(src==="fallos"){const c=[...fallos.values()].filter(f=>f.t===t.id).length; if(!c) continue; extra=` · ${c} fallos`}
+    html+=`<option value="${t.id}">Tema ${t.n}. ${esc(t.t)}${extra}</option>`;
+  }
+  sel.innerHTML=html;
+  if([...sel.options].some(o=>o.value===prev)) sel.value=prev;
+  updateNote();
+}
+function poolFor(src,tema){
+  if(src==="oficial") return OFICIAL.filter(q=>tema==="todos"||q.t===tema);
+  if(src==="fallos") return [...fallos.values()].filter(q=>tema==="todos"||q.t===tema);
+  return [];
+}
+function updateNote(){
+  const src=document.querySelector('input[name="src"]:checked').value, tema=$("#tema").value;
+  const note=$("#setupNote"); const btn=$("#btnStart");
+  btn.disabled=false;
+  if(src==="oficial"){
+    const n=poolFor(src,tema).length;
+    note.textContent = n>=nPreg ? `Se eligen ${nPreg} preguntas al azar de ${n}. Sin calculadora y dejando en blanco lo que no sepas: un fallo resta 1/4 de acierto en la parte general y 1/2 en informática.`
+      : `Este tema tiene ${n} preguntas en el examen oficial: entran todas, en orden aleatorio.`;
+  }else if(src==="fallos"){
+    const n=poolFor(src,tema).length;
+    if(!n){note.textContent="No tienes fallos pendientes en esta selección.";btn.disabled=true}
+    else note.textContent=`Repasas ${Math.min(n,nPreg)} de tus ${n} fallos. Los que aciertes salen de la lista.`;
+  }else{
+    note.textContent = sample ? "Claude tarda entre 30 segundos y 2 minutos en preparar el test. La primera vez te pedirá permiso para usar tu cuenta. Cada pregunta cita su artículo: compruébalo en el BOE si dudas."
+      : "Las preguntas con Claude solo funcionan abriendo esta página dentro de Claude, con la sesión iniciada.";
+    if(!sample) btn.disabled=true;
+  }
+}
+document.querySelectorAll('input[name="src"]').forEach(r=>r.addEventListener("change",fillTemas));
+$("#tema").addEventListener("change",updateNote);
+function setN(n){nPreg=n;$("#n10").setAttribute("aria-pressed",String(n===10));$("#n25").setAttribute("aria-pressed",String(n===25));updateNote()}
+$("#n10").onclick=()=>setN(10); $("#n25").onclick=()=>setN(25);
+
+$("#btnStart").addEventListener("click",async()=>{
+  const src=document.querySelector('input[name="src"]:checked').value, tema=$("#tema").value;
+  if(src==="ia"){await generar(tema);return}
+  const qs=shuffle(poolFor(src,tema)).slice(0,nPreg);
+  const label = src==="oficial" ? "Examen oficial 2025" : "Repaso de fallos";
+  startQuiz(qs,{fuente:src,tema,label: label+(tema==="todos"?"":" · Tema "+TEMA[tema].n)});
+});
+
+/* ---------- generar con Claude ---------- */
+async function generar(temaId){
+  const t=TEMA[temaId]; const st=$("#genStatus"); const btn=$("#btnStart");
+  st.hidden=false; st.dataset.kind=""; st.textContent="Claude está preparando tu test…";
+  btn.disabled=true;
+  genCtl=new AbortController();
+  const prompt=`Eres preparador de oposiciones al Cuerpo General Auxiliar (C2) de la Administración de la Comunidad Autónoma de Cantabria. Escribe ${nPreg} preguntas tipo test, en español de España, del tema ${t.n} del programa oficial (BOC 2024): «${t.t}». Normativa y contenido de referencia: ${t.ley}.
+
+Reglas:
+- Estilo del examen oficial del Gobierno de Cantabria: enunciado claro, cuatro opciones, una sola correcta, distractores plausibles (cambiar plazos, órganos, mayorías o porcentajes).
+- Usa solo normativa vigente y datos que conozcas con seguridad. Si dudas de un dato, no hagas esa pregunta.
+- Varía los artículos y subtemas; no repitas preguntas.
+- Evita «todas las anteriores» salvo una vez como mucho.
+- Para informática, usa Windows 11 y Microsoft 365 de escritorio en español.
+- La opción correcta debe caer en posiciones variadas (a, b, c y d).
+
+Responde solo con un array JSON de ${nPreg} objetos, sin texto alrededor:
+[{"q":"enunciado","o":["opción a","opción b","opción c","opción d"],"c":0,"e":"explicación de 1 o 2 frases","ref":"artículo y norma, p. ej. art. 21.3 Ley 39/2015"}]
+"c" es el índice (0 a 3) de la opción correcta.`;
+  try{
+    const data=await sample.json(prompt,{signal:genCtl.signal,cache:false,onText:({text})=>{
+      const n=(text.match(/"q"\s*:/g)||[]).length; st.textContent=`Claude está escribiendo: ${n} de ${nPreg} preguntas…`;
+    }});
+    const qs=(Array.isArray(data)?data:[]).filter(x=>x&&typeof x.q==="string"&&Array.isArray(x.o)&&x.o.length===4&&Number.isInteger(x.c)&&x.c>=0&&x.c<4)
+      .map(x=>({key:"ia-"+hash(x.q),src:"ia",t:temaId,q:String(x.q),o:x.o.map(String),c:x.c,e:x.e?String(x.e):"",ref:x.ref?String(x.ref):""}));
+    if(!qs.length) throw {code:"invalid_json"};
+    st.hidden=true;
+    startQuiz(qs,{fuente:"ia",tema:temaId,label:"Claude · Tema "+t.n});
+  }catch(e){
+    const code=e&&e.code;
+    const msg={cancelled:"",not_granted:"No has dado permiso para usar Claude en esta página. Puedes seguir con el examen oficial y tus fallos.",
+      rate_limited:"Has llegado al límite de uso de Claude por ahora. Prueba más tarde.",invalid_json:"Claude no devolvió un test válido. Pulsa «Empezar test» para intentarlo otra vez.",
+      session_expired:"Tu sesión de Claude ha caducado. Vuelve a iniciar sesión.",refused:"Claude no ha podido preparar este test. Prueba con otro tema."}[code];
+    if(msg===""){st.hidden=true}else{st.dataset.kind="err";st.textContent=msg||"No se pudo conectar con Claude. Inténtalo de nuevo en un momento."}
+  }finally{btn.disabled=false;genCtl=null}
+}
+
+/* ---------- test ---------- */
+function startQuiz(qs,meta){
+  current={meta,items:qs.map(q=>{const orden=shuffle([0,1,2,3]);return {q,orden,correcta:orden.indexOf(q.c)}}),corrected:false};
+  $("#setup").hidden=true; $("#quiz").hidden=false; $("#result").hidden=true; $("#quizActions").hidden=false;
+  $("#quizTitle").textContent=meta.label;
+  const L="abcd";
+  $("#qlist").innerHTML=current.items.map((it,i)=>{
+    const q=it.q; const tm=TEMA[q.t];
+    const origin = q.src==="oficial" ? `Examen 2025 · pregunta ${q.num}` : (q.src==="ia" ? "Generada por Claude" : "Fallo anterior");
+    return `<article class="q" id="q${i}">
+      <div class="meta"><span class="num">${i+1} / ${current.items.length}</span><span class="chip"><i style="background:${INFORMATICA.has(q.t)?"var(--amber)":"var(--rust)"}"></i>Tema ${tm?tm.n:""}</span><span>${esc(origin)}</span></div>
+      <h3>${esc(q.q)}</h3>
+      ${it.orden.map((orig,j)=>`<label class="opt" id="q${i}o${j}"><input type="radio" name="q${i}" value="${j}"><span class="l">${L[j]})</span><span class="t">${esc(q.o[orig])}</span></label>`).join("")}
+      <div class="fb"></div></article>`;
+  }).join("");
+  updateMeter();
+  window.scrollTo({top:$("#p-practicar").offsetTop-10,behavior:"smooth"});
+}
+function updateMeter(){
+  if(!current) return;
+  const n=current.items.length, a=current.items.filter((_,i)=>document.querySelector(`input[name="q${i}"]:checked`)).length;
+  $("#meter").style.width=(a/n*100)+"%"; $("#answered").textContent=`${a} de ${n} respondidas`;
+}
+$("#qlist").addEventListener("change",updateMeter);
+$("#btnQuit").onclick=()=>{current=null;$("#quiz").hidden=true;$("#setup").hidden=false;fillTemas()};
+
+$("#btnCheck").addEventListener("click",async()=>{
+  if(!current||current.corrected) return;
+  current.corrected=true;
+  let ok=0,bad=0,blank=0,pen=0; const porTema={}; const errores=[], aciertos=[];
+  current.items.forEach((it,i)=>{
+    const art=$("#q"+i); const q=it.q;
+    const m=document.querySelector(`input[name="q${i}"]:checked`);
+    art.querySelectorAll("input").forEach(x=>x.disabled=true);
+    const ce=$(`#q${i}o${it.correcta}`); ce.classList.add("correct"); ce.insertAdjacentHTML("beforeend",'<span class="tag">✓ Correcta</span>');
+    const pt=porTema[q.t]||(porTema[q.t]={ok:0,bad:0,blank:0});
+    let v;
+    if(!m){blank++;pt.blank++;art.classList.add("is-blank");v='<div class="verdict blank">En blanco · no resta</div>'}
+    else if(Number(m.value)===it.correcta){ok++;pt.ok++;art.classList.add("is-ok");v='<div class="verdict ok">✓ Acierto</div>';aciertos.push(q)}
+    else{bad++;pt.bad++;pen+=INFORMATICA.has(q.t)?PEN_INFO:PEN_GENERAL;art.classList.add("is-bad");
+      const w=$(`#q${i}o${m.value}`);w.classList.add("wrong");w.insertAdjacentHTML("beforeend",'<span class="tag">✗ Tu respuesta</span>');
+      v='<div class="verdict bad">✗ Error</div>';errores.push(q)}
+    let expl="";
+    if(q.src==="oficial"||q.num) expl=`Respuesta oficial según la plantilla del tribunal (10/02/2025).`;
+    if(q.e) expl=q.e+(q.ref?` (${q.ref})`:"");
+    else if(q.ref) expl=q.ref;
+    if(q.src==="ia"||q.ia) expl+=" Pregunta generada por Claude: comprueba el artículo si tienes dudas.";
+    art.querySelector(".fb").innerHTML=v+`<div class="expl">${esc(expl)}</div>`+(sample?`<div class="explain"><button class="btn ghost small" type="button" data-i="${i}">Explícamela con Claude</button><div class="out"></div></div>`:"");
+  });
+  const total=current.items.length;
+  const nota=Math.max(0,ok-pen)/total*10;
+  // resultado
+  const r=$("#result"); r.hidden=false;
+  const pc=x=>(x/total*100)+"%";
+  r.innerHTML=`<div class="result"><div class="top"><div class="bignote num">${fmt(nota)}<small> / 10</small></div>
+    <div><strong style="font-family:var(--f-display);font-size:1.2rem">${nota>=5?"Por encima del 5":"Por debajo del 5"}</strong><div class="note" style="margin:2px 0 0">Aciertos menos penalización (1/4 por fallo en la parte general, 1/2 en informática).</div></div></div>
+    <div class="stack" role="img" aria-label="${ok} aciertos, ${bad} errores, ${blank} en blanco"><span style="width:${pc(ok)};background:var(--ok)"></span><span style="width:${pc(bad)};background:var(--bad)"></span><span style="width:${pc(blank)};background:var(--blank)"></span></div>
+    <div class="legend"><span><i style="background:var(--ok)"></i>Aciertos <b class="num">${ok}</b></span><span><i style="background:var(--bad)"></i>Errores <b class="num">${bad}</b></span><span><i style="background:var(--blank)"></i>En blanco <b class="num">${blank}</b></span></div>
+    <div class="row"><button class="btn ghost" id="btnOnlyBad" type="button">Ver solo errores</button><button class="btn" id="btnNew" type="button">Nuevo test</button></div>
+    <p class="note" id="saveNote"></p></div>`;
+  $("#quizActions").hidden=true;
+  let only=false;
+  $("#btnOnlyBad").onclick=e=>{only=!only;current.items.forEach((_,i)=>{const a=$("#q"+i);a.hidden=only&&!a.classList.contains("is-bad")});e.target.textContent=only?"Ver todas":"Ver solo errores"};
+  $("#btnNew").onclick=()=>{current=null;$("#quiz").hidden=true;$("#setup").hidden=false;fillTemas();window.scrollTo({top:0,behavior:"smooth"})};
+  r.scrollIntoView({behavior:"smooth",block:"start"});
+  // guardar
+  const ses={fecha:new Date().toISOString(),fuente:current.meta.fuente,tema:current.meta.tema,label:current.meta.label,total,ok,bad,blank,nota:Math.round(nota*100)/100,porTema};
+  await guardar(ses,errores,aciertos);
+});
+
+$("#qlist").addEventListener("click",async e=>{
+  const b=e.target.closest("button[data-i]"); if(!b||!sample) return;
+  const it=current.items[Number(b.dataset.i)]; const q=it.q; const out=b.nextElementSibling;
+  b.disabled=true; out.textContent="Pensando…";
+  const L="abcd";
+  const opts=it.orden.map((orig,j)=>`${L[j]}) ${q.o[orig]}`).join("\n");
+  const prompt=`Soy opositora al Cuerpo General Auxiliar del Gobierno de Cantabria. Explícame en español, en 4 a 6 frases sencillas, por qué la respuesta correcta de esta pregunta es la ${L[it.correcta]}), citando el artículo y la norma, y por qué las otras no lo son. ${q.src==="oficial"?"La respuesta es la oficial de la plantilla del tribunal.":""} Si no estás seguro de algún dato, dilo.
+
+Tema: ${TEMA[q.t]?TEMA[q.t].t:""}
+Pregunta: ${q.q}
+${opts}
+Respuesta correcta: ${L[it.correcta]})`;
+  try{ await sample(prompt,{onText:({text})=>{out.textContent=text}}); b.hidden=true }
+  catch(err){ out.textContent = err&&err.code==="not_granted" ? "No has dado permiso para usar Claude en esta página." : (err&&err.text) || "No se pudo obtener la explicación. Inténtalo de nuevo."; b.disabled=false }
+});
+
+/* ---------- guardar historial ---------- */
+async function guardar(ses,errores,aciertos){
+  const note=$("#saveNote");
+  // fallos: suma o elimina
+  let superadas=0;
+  const now=ses.fecha;
+  const ops=[];
+  for(const q of errores){
+    const prev=fallos.get(q.key);
+    const doc={key:q.key,src:q.src==="fallos"?(prev&&prev.src)||"oficial":q.src,t:q.t,q:q.q,o:q.o,c:q.c,num:q.num||null,e:q.e||"",ref:q.ref||"",veces:(prev?prev.veces:0)+1,ultima:now,primera:prev?prev.primera:now};
+    if(q.src==="ia"||q.ia) doc.ia=true;
+    fallos.set(q.key,doc); ops.push(["set",q.key,doc]);
+  }
+  for(const q of aciertos){ if(fallos.has(q.key)){fallos.delete(q.key);superadas++;ops.push(["del",q.key])} }
+  ses.superadas=superadas;
+  if(memMode||!perfil){
+    sesiones.unshift({id:"m"+Date.now(),...ses}); refreshAll();
+    note.textContent = "Resultado guardado solo mientras tengas la página abierta.";
+    return;
+  }
+  try{
+    await perfil.collection("sesiones").add(ses);
+    for(const [op,key,doc] of ops){
+      const ref=perfil.collection("fallos").doc(key);
+      if(op==="set") await ref.set(doc); else await ref.delete();
+    }
+    note.textContent = "Guardado en tu historial"+(superadas?` · ${superadas} fallo${superadas>1?"s":""} superado${superadas>1?"s":""}`:"")+".";
+  }catch(e){
+    note.textContent = e&&e.code==="quota_exceeded" ? "El historial está lleno. Borra fallos antiguos para seguir guardando." : "No se pudo guardar este resultado. Tu nota sigue aquí.";
+    sesiones.unshift({id:"m"+Date.now(),...ses}); refreshAll();
+  }
+}
+
+/* ---------- progreso ---------- */
+function refreshAll(){
+  const n=sesiones.length;
+  const media=n?sesiones.reduce((s,x)=>s+x.nota,0)/n:null;
+  $("#sSes").textContent=n; $("#sMedia").textContent=media==null?"–":fmt(media);
+  $("#sFallos").textContent=fallos.size;
+  const b=$("#bFallos"); b.hidden=!fallos.size; b.textContent=fallos.size;
+  $("#faDesc").textContent = fallos.size ? `Tienes ${fallos.size} pregunta${fallos.size>1?"s":""} por repasar. Al acertarlas, salen de la lista.` : "Aún no tienes fallos. Aparecerán aquí cuando falles alguna pregunta.";
+  $("#srcFa").disabled=!fallos.size;
+  if($("#srcFa").checked&&!fallos.size){$("#srcOf").checked=true}
+  if($("#setup")&&!$("#setup").hidden) fillTemas();
+  renderFallos();
+  if(!$("#p-progreso").hidden) renderProgreso();
+}
+function renderProgreso(){
+  const n=sesiones.length;
+  $("#progEmpty").hidden=!!n; $("#progCharts").hidden=!n;
+  const media=n?sesiones.reduce((s,x)=>s+x.nota,0)/n:null;
+  $("#tSes").textContent=n; $("#tMedia").textContent=media==null?"–":fmt(media);
+  $("#tUlt").textContent=n?fmt(sesiones[0].nota):"–";
+  $("#tResp").textContent=sesiones.reduce((s,x)=>s+x.ok+x.bad,0);
+  if(!n) return;
+  drawNota(); drawTemas();
+  $("#histBody").innerHTML=sesiones.slice(0,40).map(s=>{
+    const d=new Date(s.fecha);
+    return `<tr><td class="num">${d.toLocaleDateString("es-ES",{day:"2-digit",month:"short"})} ${d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}</td><td>${esc(s.label||"")}</td><td class="n">${s.ok}</td><td class="n">${s.bad}</td><td class="n">${s.blank}</td><td class="n"><b>${fmt(s.nota)}</b></td></tr>`}).join("");
+}
+function drawNota(){
+  const data=sesiones.slice(0,30).reverse();
+  const W=720,H=240,ml=34,mr=16,mt=14,mb=30, iw=W-ml-mr, ih=H-mt-mb;
+  const x=i=>ml+(data.length===1?iw/2:i*iw/(data.length-1)), y=v=>mt+ih-(v/10)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolución de tu nota en las últimas ${data.length} sesiones">`;
+  for(const v of [0,2,4,6,8,10]) s+=`<line class="gl" x1="${ml}" x2="${W-mr}" y1="${y(v)}" y2="${y(v)}"/><text x="${ml-8}" y="${y(v)+4}" text-anchor="end">${v}</text>`;
+  s+=`<line class="pass" x1="${ml}" x2="${W-mr}" y1="${y(5)}" y2="${y(5)}"/>`;
+  const pts=data.map((d,i)=>[x(i),y(d.nota)]);
+  if(pts.length>1){
+    s+=`<path class="ar" d="M${pts[0][0]},${y(0)} ${pts.map(p=>"L"+p[0]+","+p[1]).join(" ")} L${pts.at(-1)[0]},${y(0)}Z"/>`;
+    s+=`<path class="ln" d="M${pts.map(p=>p.join(",")).join(" L")}"/>`;
+  }
+  data.forEach((d,i)=>{const last=i===data.length-1;
+    s+=`<circle class="dt" cx="${pts[i][0]}" cy="${pts[i][1]}" r="${last?6:4.5}"/>`;
+    const dd=new Date(d.fecha).toLocaleDateString("es-ES",{day:"numeric",month:"short"});
+    s+=`<rect class="hit" x="${pts[i][0]-14}" y="${mt}" width="28" height="${ih}" data-tip="${esc(dd+" · "+(d.label||"")+" · nota "+fmt(d.nota)+" ("+d.ok+" ✓, "+d.bad+" ✗)")}"/>`;
+  });
+  const last=data.at(-1);
+  s+=`<text class="lbl" x="${Math.min(pts.at(-1)[0],W-mr-4)}" y="${pts.at(-1)[1]-12}" text-anchor="end" font-weight="700">${fmt(last.nota)}</text>`;
+  s+=`<text x="${ml}" y="${H-8}">${data.length>1?"Más antigua":""}</text><text x="${W-mr}" y="${H-8}" text-anchor="end">Última sesión</text>`;
+  $("#chNota").innerHTML=s+"</svg>";
+}
+function drawTemas(){
+  const agg={};
+  for(const s of sesiones) for(const [t,v] of Object.entries(s.porTema||{})){const a=agg[t]||(agg[t]={ok:0,bad:0});a.ok+=v.ok||0;a.bad+=v.bad||0}
+  const rows=Object.entries(agg).filter(([t,a])=>a.ok+a.bad>0&&TEMA[t]).map(([t,a])=>({t,pct:a.bad/(a.ok+a.bad)*100,bad:a.bad,n:a.ok+a.bad})).sort((a,b)=>b.pct-a.pct||b.bad-a.bad);
+  if(!rows.length){$("#chTemas").innerHTML='<p class="note">Responde alguna pregunta para ver tus temas.</p>';return}
+  const W=720,rowH=30,ml=250,mr=70,H=rows.length*rowH+24, iw=W-ml-mr;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Porcentaje de errores por tema">`;
+  for(const v of [0,50,100]){const xx=ml+v/100*iw; s+=`<line class="gl" x1="${xx}" x2="${xx}" y1="0" y2="${H-20}"/><text x="${xx}" y="${H-4}" text-anchor="middle">${v}%</text>`}
+  rows.forEach((r,i)=>{
+    const yy=i*rowH+5, w=Math.max(r.pct/100*iw, r.pct>0?3:0), name=TEMA[r.t].t;
+    const short=name.length>34?name.slice(0,33)+"…":name;
+    s+=`<text class="lbl" x="${ml-10}" y="${yy+15}" text-anchor="end">${esc(short)}</text>`;
+    s+=`<rect class="bartrack" x="${ml}" y="${yy+4}" width="${iw}" height="14" rx="4"/>`;
+    if(w) s+=`<rect class="bar" x="${ml}" y="${yy+4}" width="${w}" height="14" rx="4"/>`;
+    s+=`<text class="lbl num" x="${ml+iw+8}" y="${yy+15}">${Math.round(r.pct)}%</text>`;
+    s+=`<rect class="hit" x="0" y="${yy}" width="${W}" height="${rowH}" data-tip="${esc("Tema "+TEMA[r.t].n+". "+name+": "+r.bad+" errores de "+r.n+" respondidas")}"/>`;
+  });
+  $("#chTemas").innerHTML=s+"</svg>";
+}
+
+/* ---------- fallos ---------- */
+function renderFallos(){
+  const list=[...fallos.values()];
+  $("#fallosEmpty").hidden=!!list.length; $("#btnRepasar").disabled=!list.length;
+  const groups={};
+  for(const f of list)(groups[f.t]||(groups[f.t]=[])).push(f);
+  const order=TEMAS.map(t=>t.id).filter(id=>groups[id]);
+  $("#fallosList").innerHTML=order.map(id=>{
+    const g=groups[id].sort((a,b)=>b.veces-a.veces);
+    return `<div class="fgroup"><h3><span class="chip"><i style="background:var(--bad)"></i>${g.length}</span>Tema ${TEMA[id].n}. ${esc(TEMA[id].t)}</h3>${g.map(f=>`
+      <div class="fitem"><div class="times num">${f.veces}<small>${f.veces>1?"veces":"vez"}</small></div>
+      <div class="body"><p>${esc(f.q)}</p><small>Correcta: <b>${esc(f.o[f.c])}</b>${f.num?` · Examen 2025, pregunta ${f.num}`:(f.ia?" · Generada por Claude":"")}</small></div>
+      <button class="btn ghost small" type="button" data-del="${esc(f.key)}">Ya la sé</button></div>`).join("")}</div>`}).join("");
+}
+$("#fallosList").addEventListener("click",async e=>{
+  const b=e.target.closest("button[data-del]"); if(!b) return;
+  const key=b.dataset.del; b.disabled=true;
+  fallos.delete(key);
+  if(perfil&&!memMode){try{await perfil.collection("fallos").doc(key).delete()}catch(err){}}
+  refreshAll();
+});
+$("#btnRepasar").onclick=()=>{
+  $("#srcFa").checked=true; showTab("practicar"); fillTemas(); $("#tema").value="todos";
+  const qs=shuffle([...fallos.values()]).slice(0,nPreg);
+  startQuiz(qs.map(f=>({...f,src:"fallos",ia:f.ia})),{fuente:"fallos",tema:"todos",label:"Repaso de fallos"});
+};
+
+/* ---------- tooltip ---------- */
+const tip=$("#tip");
+document.addEventListener("pointermove",e=>{
+  const h=e.target.closest&&e.target.closest("[data-tip]");
+  if(!h){tip.style.opacity=0;return}
+  tip.textContent=h.getAttribute("data-tip"); tip.style.opacity=1;
+  const x=Math.min(e.clientX+14, innerWidth-tip.offsetWidth-8); tip.style.left=x+"px"; tip.style.top=(e.clientY+14)+"px";
+});
+
+/* ---------- arranque ---------- */
+(function init(){
+  let t="practicar"; try{t=localStorage.getItem("tab")||t}catch(e){}
+  if(!tabs.includes(t)) t="practicar";
+  showTab(t); fillTemas(); refreshAll();
+  $("#storeNote").textContent="Conectando con tu historial…";
+  if(!window.claude||!window.claude.use){memMode=true;$("#storeNote").textContent="Abre esta página en Claude para guardar tu historial.";updateNote();return}
+  claude.use("sample").then(s=>{sample=s;updateNote();if(!s)$("#iaDesc").textContent="Disponible al abrir esta página en Claude con tu sesión iniciada."});
+  Promise.all([claude.use("db"),claude.use("user")]).then(async([d,u])=>{
+    db=d; uid=u?await u.id():null;
+    if(!db||!uid){memMode=true;$("#storeNote").textContent="Tu historial no se está guardando ahora mismo: inicia sesión en Claude para conservarlo entre visitas.";return}
+    perfil=db.doc(`data/users/${uid}/perfil`);
+    $("#storeNote").textContent="Tu historial es privado: solo lo ves tú.";
+    perfil.collection("sesiones").orderBy("fecha","desc").limit(300).onSnapshot(snap=>{
+      sesiones=snap.docs.map(d=>({id:d.id,...d.data()})); refreshAll();
+    },()=>{memMode=true;$("#storeNote").textContent="No se pudo cargar tu historial en esta visita."});
+    perfil.collection("fallos").limit(1000).onSnapshot(snap=>{
+      fallos=new Map(snap.docs.map(d=>[d.id,d.data()])); refreshAll();
+    },()=>{});
+  });
+})();
+</script>
+
+</body></html>
